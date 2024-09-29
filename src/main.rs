@@ -6,13 +6,17 @@ use tower_http::cors::CorsLayer;
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
 
-async fn on_connect(socket: SocketRef){
+async fn on_connect(socket: SocketRef) {
     info!("Socket connected: {}", socket.id);
 
-    socket.on("message", |_socekt: SocketRef, Data::<Value>(data)| {
-        info!("You: {:?}", data);
-    })
+    socket.on("message", |socket: SocketRef, Data::<Value>(data)| async move {
+        info!("Received from client: {:?}", data);
+        
+        // Optionally send a message back to the client for confirmation
+        socket.emit("server_message", &data).unwrap();
+    });
 }
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
